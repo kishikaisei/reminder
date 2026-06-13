@@ -3,227 +3,231 @@
     <head>
     <meta charset = "UTF-8">
     <meta name = "viewport" content = "width=device-width, initial-scale=1.0">
-    <title> Work Reminders Dashboard < /title> <style>
-    :root {
-        --bg-color: #121214;
-            --card-bg: #1 a1a1e;
-        --text-color: #e4e4e7;
-        --accent-color: #3b82f6;
-            --danger-color: #ef4444;
-        --success-color: #10b981;
-            --warning-color: #f59e0b;
-    }
+    <title> Work Reminders Dashboard </title>
+    <style>
+        :root {
+            --bg-color: #121214;
+                --card-bg: #1 a1a1e;
+            --text-color: #e4e4e7;
+            --accent-color: #3b82f6;
+                --danger-color: #ef4444;
+            --success-color: #10b981;
+                --warning-color: #f59e0b;
+        }
 
-body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background-color: var (--bg-color);
-    color: var (--text-color);
-    margin: 0;
-    padding: 20 px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.container {
-    width: 100% ;
-    max-width: 500 px;
-    background: var (--card-bg);
-    padding: 25 px;
-    border-radius: 12 px;
-    box-shadow: 0 4 px 15 px rgba(0, 0, 0, 0.3);
-    margin-top: 20 px;
-}
-
-h1 {
-    font-size: 1.5 rem;
-    margin-top: 0;
-    text-align: center;
-    color: var (--accent-color);
-}
-
-.clock-display {
-        font-size: 3 rem;
-        font-weight: bold;
-        text-align: center;
-        margin: 15 px 0;
-        font-variant-numeric: tabular-nums;
-        letter-spacing: 1 px;
-    }
-
-    .perm-banner {
-        background: #27272a;
-            border: 1px solid var(--warning-color);
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 20px;
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var (--bg-color);
+            color: var (--text-color);
+            margin: 0;
+            padding: 20 px;
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
             align-items: center;
-            font-size: 0.9rem;
         }
 
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-bottom: 20px;
+        .container {
+            width: 100% ;
+            max-width: 500 px;
+            background: var (--card-bg);
+            padding: 25 px;
+            border-radius: 12 px;
+            box-shadow: 0 4 px 15 px rgba(0, 0, 0, 0.3);
+            margin-top: 20 px;
         }
 
-        .input-row {
-            display: flex;
-            gap: 10px;
+        h1 {
+            font-size: 1.5 rem;
+            margin-top: 0;
+            text-align: center;
+            color: var (--accent-color);
         }
 
-        input[type= "time"] {
-        width: 130 px;
-        padding: 10 px;
-        border: 1 px solid #3f3f46;
-            background: #27272a;
-        color: white;
-        border-radius: 6 px;
-        font-size: 1.1 rem;
-        outline: none;
-    }
+        .clock-display {
+                font-size: 3 rem;
+                font-weight: bold;
+                text-align: center;
+                margin: 15 px 0;
+                font-variant-numeric: tabular-nums;
+                letter-spacing: 1 px;
+            }
 
-input[type = "text"] {
-    flex: 1;
-    padding: 10 px;
-    border: 1 px solid #3f3f46;
-            background: #27272a;
-    color: white;
-    border-radius: 6 px;
-    font-size: 1.1 rem;
-    outline: none;
-}
+            .perm-banner {
+                background: #27272a;
+                    border: 1px solid var(--warning-color);
+                    padding: 12px;
+                    border-radius: 8px;
+                    margin-bottom: 20px;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    font-size: 0.9rem;
+                }
 
-button {
-    padding: 12 px;
-    background: var (--accent-color);
-    color: white;
-    border: none;
-    border-radius: 6 px;
-    font-weight: bold;
-    cursor: pointer;
-    font-size: 1 rem;
-    transition: opacity 0.2 s;
-}
+                .form-group {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 10px;
+                    margin-bottom: 20px;
+                }
 
-button:hover {
-        opacity: 0.9;
-    }
+                .input-row {
+                    display: flex;
+                    gap: 10px;
+                }
 
-    .btn-perm {
-        background: var (--warning-color);
-        color: black;
-        padding: 6 px 12 px;
-        font-size: 0.85 rem;
-    }
+                input[type= "time"] {
+                width: 130 px;
+                padding: 10 px;
+                border: 1 px solid #3f3f46;
+                    background: #27272a;
+                color: white;
+                border-radius: 6 px;
+                font-size: 1.1 rem;
+                outline: none;
+            }
 
-    .alarm-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
-
-    .alarm-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background: #27272a;
-            padding: 12px 15px;
-            border-radius: 6px;
-            margin-bottom: 10px;
-            border-left: 4px solid var(--accent-color);
+        input[type = "text"] {
+            flex: 1;
+            padding: 10 px;
+            border: 1 px solid #3f3f46;
+                    background: #27272a;
+            color: white;
+            border-radius: 6 px;
+            font-size: 1.1 rem;
+            outline: none;
         }
 
-        .alarm-details {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-
-        .alarm-time {
-            font-size: 1.2rem;
+        button {
+            padding: 12 px;
+            background: var (--accent-color);
+            color: white;
+            border: none;
+            border-radius: 6 px;
             font-weight: bold;
+            cursor: pointer;
+            font-size: 1 rem;
+            transition: opacity 0.2 s;
         }
 
-        .alarm-desc {
-            font-size: 0.9rem;
-            color: #a1a1aa;
-    }
+        button:hover {
+                opacity: 0.9;
+            }
 
-    .btn-delete {
-        background: var (--danger-color);
-        padding: 6 px 12 px;
-        font-size: 0.85 rem;
-    }
+            .btn-perm {
+                background: var (--warning-color);
+                color: black;
+                padding: 6 px 12 px;
+                font-size: 0.85 rem;
+            }
 
-    .overlay {
-        position: fixed;
-        top: 0;left: 0;right: 0;bottom: 0;
-        background: rgba(0, 0, 0, 0.85);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-        visibility: hidden;
-        opacity: 0;
-        transition: all 0.3 s ease;
-    }
+            .alarm-list {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
 
-    .overlay.active {
-        visibility: visible;
-        opacity: 1;
-    }
+            .alarm-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                background: #27272a;
+                    padding: 12px 15px;
+                    border-radius: 6px;
+                    margin-bottom: 10px;
+                    border-left: 4px solid var(--accent-color);
+                }
 
-    .modal {
-        background: var (--card-bg);
-        padding: 30 px;
-        border-radius: 12 px;
-        text-align: center;
-        border: 2 px solid
-        var (--danger-color);
-        max-width: 400 px;
-        width: 80% ;
-        animation: pulse-border 1.5 s infinite;
-    }
+                .alarm-details {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 2px;
+                }
 
-@keyframes pulse-border {
-        0% {
-            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
-        }
-        70% {
-            box-shadow: 0 0 0 15 px rgba(239, 68, 68, 0);
-        }
-        100% {
-            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
-        }
-    }
+                .alarm-time {
+                    font-size: 1.2rem;
+                    font-weight: bold;
+                }
 
-    .modal h2 {
-        font-size: 2.5 rem;
-        margin: 0 0 10 px 0;
-        color: var (--danger-color);
-    }
+                .alarm-desc {
+                    font-size: 0.9rem;
+                    color: #a1a1aa;
+            }
 
-    .modal p {
-        font-size: 1.2 rem;
-        margin-bottom: 5 px;
-    }
-    .modal.modal-desc {
-        font-size: 1.4 rem;
-        font-weight: bold;
-        color: #fff;
-        margin-bottom: 25 px;
-    }
+            .btn-delete {
+                background: var (--danger-color);
+                padding: 6 px 12 px;
+                font-size: 0.85 rem;
+            }
 
-    .btn-dismiss {
-        background: var (--success-color);
-        font-size: 1.2 rem;
-        padding: 12 px 30 px;
-        width: 100% ;
-    } </style> </head> <body>
+            .overlay {
+                position: fixed;
+                top: 0;left: 0;right: 0;bottom: 0;
+                background: rgba(0, 0, 0, 0.85);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 1000;
+                visibility: hidden;
+                opacity: 0;
+                transition: all 0.3 s ease;
+            }
+
+            .overlay.active {
+                visibility: visible;
+                opacity: 1;
+            }
+
+            .modal {
+                background: var (--card-bg);
+                padding: 30 px;
+                border-radius: 12 px;
+                text-align: center;
+                border: 2 px solid
+                var (--danger-color);
+                max-width: 400 px;
+                width: 80% ;
+                animation: pulse-border 1.5 s infinite;
+            }
+
+        @keyframes pulse-border {
+                0% {
+                    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+                }
+                70% {
+                    box-shadow: 0 0 0 15 px rgba(239, 68, 68, 0);
+                }
+                100% {
+                    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+                }
+            }
+
+            .modal h2 {
+                font-size: 2.5 rem;
+                margin: 0 0 10 px 0;
+                color: var (--danger-color);
+            }
+
+            .modal p {
+                font-size: 1.2 rem;
+                margin-bottom: 5 px;
+            }
+            .modal.modal-desc {
+                font-size: 1.4 rem;
+                font-weight: bold;
+                color: #fff;
+                margin-bottom: 25 px;
+            }
+
+            .btn-dismiss {
+                background: var (--success-color);
+                font-size: 1.2 rem;
+                padding: 12 px 30 px;
+                width: 100% ;
+            }
+    </style>
+    </head>    
+<body>
 
     <div class = "container">
     <h1> ⏰Multi-Alarm Assistant < /h1> <div class = "clock-display"
@@ -257,8 +261,8 @@ style = "font-weight:bold;"> 00: 00 < /span> is triggering!</p>
 id = "triggeredDesc"> No description < /div> <button class = "btn-dismiss"
 onclick = "dismissAlarm()"> Dismiss Alert < /button> </div> </div>
 
-    <script>
-    let alarms = JSON.parse(localStorage.getItem('savedAlarms')) || [];
+<script>
+let alarms = JSON.parse(localStorage.getItem('savedAlarms')) || [];
 let audioCtx = null;
 let alarmInterval = null;
 let originalTitle = document.title;
@@ -268,6 +272,13 @@ updateClock();
 setInterval(updateClock, 1000);
 renderAlarms();
 checkNotificationPermission();
+
+// ✅ Request permission on first interaction (best practice for browsers)
+document.addEventListener("click", () => {
+    if ("Notification" in window && Notification.permission === "default") {
+        Notification.requestPermission();
+    }
+}, { once: true });
 
 function updateClock() {
     const now = new Date();
@@ -294,91 +305,36 @@ function requestNotificationPermission() {
         if (permission === "granted") {
             document.getElementById('permBanner').style.display = 'none';
             new Notification("Multi-Alarm Assistant", {
-                body: "Windows system alerts are enabled successfully!",
+                body: "Desktop notifications enabled ✅",
                 requireInteraction: true
             });
         }
     });
 }
 
-function renderAlarms() {
-    alarms.sort((a, b) => a.time.localeCompare(b.time));
-    localStorage.setItem('savedAlarms', JSON.stringify(alarms));
-
-    const listEl = document.getElementById('alarmList');
-    listEl.innerHTML = '';
-
-    alarms.forEach(alarm => {
-        const li = document.createElement('li');
-        li.className = 'alarm-item';
-        li.innerHTML = `
-                    <div class="alarm-details">
-                        <span class="alarm-time">${alarm.time}</span>
-                        <span class="alarm-desc">${alarm.desc || 'No description'}</span>
-                    </div>
-                    <button class="btn-delete" onclick="deleteAlarm('${alarm.time}')">Delete</button>
-                `;
-        listEl.appendChild(li);
-    });
-}
-
-function addAlarm() {
-    const timeInput = document.getElementById('alarmTime');
-    const descInput = document.getElementById('alarmDesc');
-
-    const timeVal = timeInput.value;
-    const descVal = descInput.value.trim();
-
-    if (!timeVal) return;
-
-    if (!alarms.some(a => a.time === timeVal)) {
-        alarms.push({
-            time: timeVal,
-            desc: descVal
-        });
-        renderAlarms();
-    }
-
-    timeInput.value = '';
-    descInput.value = '';
-}
-
-function deleteAlarm(timeToRemove) {
-    alarms = alarms.filter(a => a.time !== timeToRemove);
-    renderAlarms();
-}
-
-function startBeeping() {
-    if (!audioCtx) audioCtx = new(window.AudioContext || window.webkitAudioContext)();
-    alarmInterval = setInterval(() => {
-        if (!audioCtx) return;
-        let osc = audioCtx.createOscillator();
-        let gain = audioCtx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(880, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.15);
-    }, 500);
-}
-
 function triggerAlarm(alarm) {
     const overlay = document.getElementById('alarmOverlay');
-    if (overlay.classList.contains('active') && document.getElementById('triggeredTime').textContent === alarm.time) return;
+
+    if (
+        overlay.classList.contains('active') &&
+        document.getElementById('triggeredTime').textContent === alarm.time
+    ) return;
+
     document.getElementById('triggeredTime').textContent = alarm.time;
     document.getElementById('triggeredDesc').textContent = alarm.desc || 'No description';
+
     overlay.classList.add('active');
     startBeeping();
+
+    // ✅ FIXED notification
     if ("Notification" in window && Notification.permission === "granted") {
-        new Notification(🚨$ {
-            alarm.time
-        }-Reminder, {
+        new Notification(`🚨 ${alarm.time} - Reminder`, {
             body: alarm.desc || 'Your scheduled alarm is ringing.',
+            icon: "https://cdn-icons-png.flaticon.com/512/1827/1827392.png",
             requireInteraction: true
         });
     }
+
     if (!titleFlashInterval) {
         let toggle = false;
         titleFlashInterval = setInterval(() => {
@@ -387,16 +343,6 @@ function triggerAlarm(alarm) {
         }, 500);
     }
 }
-
-function dismissAlarm() {
-    document.getElementById('alarmOverlay').classList.remove('active');
-    clearInterval(alarmInterval);
-    clearInterval(titleFlashInterval);
-    titleFlashInterval = null;
-    document.title = originalTitle;
-    const activeTime = document.getElementById('triggeredTime').textContent;
-    deleteAlarm(activeTime);
-} 
-</script> 
+</script>
 </body>
 </html>
