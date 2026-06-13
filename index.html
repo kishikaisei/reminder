@@ -230,36 +230,47 @@
 <body>
 
     <div class = "container">
-    <h1> ⏰Multi-Alarm Assistant < /h1> <div class = "clock-display"
-id = "liveClock"> 00: 00: 00 < /div>
+        <h1> ⏰Multi-Alarm Assistant </h1>
+        <div class = "clock-display" id = "liveClock"> 00: 00: 00 </div>
+        <div class = "perm-banner"
+            id = "permBanner"
+            style = "display: none;">
+            <span> Enable Windows desktop notifications ? </span> 
+            <button class = "btn-perm" onclick = "requestNotificationPermission()"> Enable </button>
+        </div>
 
-    <div class = "perm-banner"
-id = "permBanner"
-style = "display: none;">
-    <span> Enable Windows desktop notifications ? < /span> <button class = "btn-perm"
-onclick = "requestNotificationPermission()"> Enable < /button> </div>
+        <div class = "form-group">
+            <div class = "input-row">
+                <input type = "time"
+                    id = "alarmTime"
+                    required>
+                <input type = "text"
+                    id = "alarmDesc"
+                    placeholder = "Description (e.g., Team Sync)">
+            </div> 
+            <button onclick = "addAlarm()"> Add Alarm </button> 
+        </div>
 
-    <div class = "form-group">
-    <div class = "input-row">
-    <input type = "time"
-id = "alarmTime"
-required>
-    <input type = "text"
-id = "alarmDesc"
-placeholder = "Description (e.g., Team Sync)">
-    </div> <button onclick = "addAlarm()"> Add Alarm < /button> </div>
-
-    <ul class = "alarm-list"
-id = "alarmList"> < /ul> </div>
+        <ul class = "alarm-list"
+            id = "alarmList">
+        </ul>
+    </div>
 
     <div class = "overlay"
-id = "alarmOverlay">
-    <div class = "modal">
-    <h2> 🚨REMINDER🚨 < /h2> <p> Your alarm at < span id = "triggeredTime"
-style = "font-weight:bold;"> 00: 00 < /span> is triggering!</p>
-    <div class = "modal-desc"
-id = "triggeredDesc"> No description < /div> <button class = "btn-dismiss"
-onclick = "dismissAlarm()"> Dismiss Alert < /button> </div> </div>
+        id = "alarmOverlay">
+        <div class = "modal">
+            <h2> 🚨REMINDER🚨 </h2>
+            <p> Your alarm at
+                <span id = "triggeredTime"
+                      style = "font-weight:bold;"> 00: 00
+                </span> is triggering!
+            </p>
+            <div class = "modal-desc"
+                 id = "triggeredDesc"> No description 
+            </div>
+            <button class = "btn-dismiss" onclick = "dismissAlarm()"> Dismiss Alert </button> 
+        </div> 
+    </div>
 
 <script>
 let alarms = JSON.parse(localStorage.getItem('savedAlarms')) || [];
@@ -344,5 +355,6 @@ function triggerAlarm(alarm) {
     }
 }
 </script>
+
 </body>
 </html>
