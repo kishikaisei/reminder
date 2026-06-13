@@ -193,17 +193,27 @@
         updateClock();
         setInterval(updateClock, 1000);
         renderAlarms();
+        checkNotificationPermission();
 
         function updateClock() {
             const now = new Date();
-            const timeString = now.toTimeString().split(' ')[0];
-            document.getElementById('liveClock').textContent = timeString;
+            const timeString = now.toTimeString().split(' ');
+            document.getElementById('liveClock').textContent = timeString[0];
 
             // Check match against the HH:MM format
-            const currentHHMM = timeString.substring(0, 5);
+            const currentHHMM = timeString[0].substring(0, 5);
             
             if (alarms.includes(currentHHMM)) {
                 triggerAlarm(currentHHMM);
+            }
+        }
+
+        function checkNotificationPermission() {
+            if (!("Notification" in window)) return;
+            
+            // Auto-request permission on page load if not handled by a banner
+            if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+                Notification.requestPermission();
             }
         }
 
@@ -270,6 +280,14 @@
             overlay.classList.add('active');
             
             startBeeping();
+
+            // Native Desktop Notification Integration
+            if ("Notification" in window && Notification.permission === "granted") {
+                new Notification(`🚨 Alarm Reminder`, {
+                    body: `Your scheduled alarm for ${time} is ringing right now!`,
+                    requireInteraction: true // Keeps notification on screen until dismissed
+                });
+            }
 
             // Flash tab header text 
             if(!titleFlashInterval) {
