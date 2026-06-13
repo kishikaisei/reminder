@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Work Reminders Dashboard</title>
+    <style>
+        :root {
+            --bg-color: #121214;
+            --card-bg: #1a1a1e;
+            --text-color: #e4e4e7;
+            --accent-color: #3b82f6;
+            --danger-color: #ef4444;
+            --success-color: #10b981;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            margin-top: 20px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin-top: 0;
+            text-align: center;
+            color: var(--accent-color);
+        }
+
+        .clock-display {
+            font-size: 3rem;
+            font-weight: bold;
+            text-align: center;
+            margin: 15px 0;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: 1px;
+        }
+
+        .form-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input[type="time"] {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #3f3f46;
+            background: #27272a;
+            color: white;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            outline: none;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: opacity 0.2s;
+        }
+
+        button:hover { opacity: 0.9; }
+
+        .alarm-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .alarm-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #27272a;
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .alarm-time {
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+
+        .btn-delete {
+            background: var(--danger-color);
+            padding: 6px 12px;
+            font-size: 0.85rem;
+        }
+
+        /* Modal popup overlay when alarm triggers */
+        .overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .overlay.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .modal {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            border: 2px solid var(--danger-color);
+            animation: pulse-border 1.5s infinite;
+        }
+
+        @keyframes pulse-border {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        .modal h2 {
+            font-size: 2.5rem;
+            margin: 0 0 10px 0;
+            color: var(--danger-color);
+        }
+        
+        .modal p { font-size: 1.2rem; margin-bottom: 20px;}
+
+        .btn-dismiss {
+            background: var(--success-color);
+            font-size: 1.2rem;
+            padding: 12px 30px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>⏰ Multi-Alarm Assistant</h1>
+        <div class="clock-display" id="liveClock">00:00:00</div>
+        
+        <div class="form-group">
+            <input type="time" id="alarmTime" required>
+            <button onclick="addAlarm()">Add Alarm</button>
+        </div>
+
+        <ul class="alarm-list" id="alarmList"></ul>
+    </div>
+
+    <!-- Alarm Trigger Alert Interface -->
+    <div class="overlay" id="alarmOverlay">
+        <div class="modal">
+            <h2>🚨 REMINDER 🚨</h2>
+            <p>Your scheduled alarm at <span id="triggeredTime" style="font-weight:bold;">00:00</span> is triggering right now!</p>
+            <button class="btn-dismiss" onclick="dismissAlarm()">Dismiss Alert</button>
+        </div>
+    </div>
+
+    <script>
+        let alarms = JSON.parse(localStorage.getItem('savedAlarms')) || [];
+        let audioCtx = null;
+        let alarmInterval = null;
+        let originalTitle = document.title;
+        let titleFlashInterval = null;
+
+        // Initialize display and state
+        updateClock();
+        setInterval(updateClock, 1000);
+        renderAlarms();
+
+        function updateClock() {
+            const now = new Date();
+            const timeString = now.toTimeString().split(' ')[0];
+            document.getElementById('liveClock').textContent = timeString;
+
+            // Check match against the HH:MM format
+            const currentHHMM = timeString.substring(0, 5);
+            
+            if (alarms.includes(currentHHMM)) {
+                triggerAlarm(currentHHMM);
+            }
+        }
+
+        function renderAlarms() {
+            // Sort list chronologically 
+            alarms.sort();
+            localStorage.setItem('savedAlarms', JSON.stringify(alarms));
+            
+            const listEl = document.getElementById('alarmList');
+            listEl.innerHTML = '';
+            
+            alarms.forEach(time => {
+                const li = document.createElement('li');
+                li.className = 'alarm-item';
+                li.innerHTML = `
+                    <span class="alarm-time">${time}</span>
+                    <button class="btn-delete" onclick="deleteAlarm('${time}')">Delete</button>
+                `;
+                listEl.appendChild(li);
+            });
+        }
+
+        function addAlarm() {
+            const input = document.getElementById('alarmTime');
+            const newTime = input.value;
+            if (!newTime) return;
+
+            if (!alarms.includes(newTime)) {
+                alarms.push(newTime);
+                renderAlarms();
+            }
+            input.value = '';
+        }
+
+        function deleteAlarm(timeToRemove) {
+            alarms = alarms.filter(time => time !== timeToRemove);
+            renderAlarms();
+        }
+
+        // Web Audio API Synth Beeper (No external file dependencies)
+        function startBeeping() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            
+            alarmInterval = setInterval(() => {
+                if (!audioCtx) return;
+                let osc = audioCtx.createOscillator();
+                let gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(880, audioCtx.currentTime); // Pitch: A5 note
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.15); // Short, sharp beep
+            }, 500);
+        }
+
+        function triggerAlarm(time) {
+            // Prevent duplicate alert stacks if it's already open
+            const overlay = document.getElementById('alarmOverlay');
+            if (overlay.classList.contains('active') && document.getElementById('triggeredTime').textContent === time) return;
+
+            document.getElementById('triggeredTime').textContent = time;
+            overlay.classList.add('active');
+            
+            startBeeping();
+
+            // Flash tab header text 
+            if(!titleFlashInterval) {
+                let toggle = false;
+                titleFlashInterval = setInterval(() => {
+                    document.title = toggle ? "⚠️ ALARM ACTIVE! ⚠️" : "⏰ " + time;
+                    toggle = !toggle;
+                }, 500);
+            }
+        }
+
+        function dismissAlarm() {
+            document.getElementById('alarmOverlay').classList.remove('active');
+            
+            // Clean up intervals and alert audio
+            clearInterval(alarmInterval);
+            clearInterval(titleFlashInterval);
+            titleFlashInterval = null;
+            document.title = originalTitle;
+            
+            // Remove the triggered alarm automatically so it won't keep firing during this exact minute
+            const activeTime = document.getElementById('triggeredTime').textContent;
+            deleteAlarm(activeTime);
+        }
+    </script>
+</body>
+</html>
