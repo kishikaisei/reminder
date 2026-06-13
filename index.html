@@ -273,7 +273,7 @@
     </div>
 
 <script>
-let alarms = JSON.parse(localStorage.getItem('savedAlarms')) || [];
+    let alarms = JSON.parse(localStorage.getItem('savedAlarms')) || [];
 let audioCtx = null;
 let alarmInterval = null;
 let originalTitle = document.title;
@@ -283,13 +283,6 @@ updateClock();
 setInterval(updateClock, 1000);
 renderAlarms();
 checkNotificationPermission();
-
-// ✅ Request permission on first interaction (best practice for browsers)
-document.addEventListener("click", () => {
-    if ("Notification" in window && Notification.permission === "default") {
-        Notification.requestPermission();
-    }
-}, { once: true });
 
 function updateClock() {
     const now = new Date();
@@ -316,36 +309,91 @@ function requestNotificationPermission() {
         if (permission === "granted") {
             document.getElementById('permBanner').style.display = 'none';
             new Notification("Multi-Alarm Assistant", {
-                body: "Desktop notifications enabled ✅",
+                body: "Windows system alerts are enabled successfully!",
                 requireInteraction: true
             });
         }
     });
 }
 
+function renderAlarms() {
+    alarms.sort((a, b) => a.time.localeCompare(b.time));
+    localStorage.setItem('savedAlarms', JSON.stringify(alarms));
+
+    const listEl = document.getElementById('alarmList');
+    listEl.innerHTML = '';
+
+    alarms.forEach(alarm => {
+        const li = document.createElement('li');
+        li.className = 'alarm-item';
+        li.innerHTML = `
+                    <div class="alarm-details">
+                        <span class="alarm-time">${alarm.time}</span>
+                        <span class="alarm-desc">${alarm.desc || 'No description'}</span>
+                    </div>
+                    <button class="btn-delete" onclick="deleteAlarm('${alarm.time}')">Delete</button>
+                `;
+        listEl.appendChild(li);
+    });
+}
+
+function addAlarm() {
+    const timeInput = document.getElementById('alarmTime');
+    const descInput = document.getElementById('alarmDesc');
+
+    const timeVal = timeInput.value;
+    const descVal = descInput.value.trim();
+
+    if (!timeVal) return;
+
+    if (!alarms.some(a => a.time === timeVal)) {
+        alarms.push({
+            time: timeVal,
+            desc: descVal
+        });
+        renderAlarms();
+    }
+
+    timeInput.value = '';
+    descInput.value = '';
+}
+
+function deleteAlarm(timeToRemove) {
+    alarms = alarms.filter(a => a.time !== timeToRemove);
+    renderAlarms();
+}
+
+function startBeeping() {
+    if (!audioCtx) audioCtx = new(window.AudioContext || window.webkitAudioContext)();
+    alarmInterval = setInterval(() => {
+        if (!audioCtx) return;
+        let osc = audioCtx.createOscillator();
+        let gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.15);
+    }, 500);
+}
+
 function triggerAlarm(alarm) {
     const overlay = document.getElementById('alarmOverlay');
-
-    if (
-        overlay.classList.contains('active') &&
-        document.getElementById('triggeredTime').textContent === alarm.time
-    ) return;
-
+    if (overlay.classList.contains('active') && document.getElementById('triggeredTime').textContent === alarm.time) return;
     document.getElementById('triggeredTime').textContent = alarm.time;
     document.getElementById('triggeredDesc').textContent = alarm.desc || 'No description';
-
     overlay.classList.add('active');
     startBeeping();
-
-    // ✅ FIXED notification
     if ("Notification" in window && Notification.permission === "granted") {
-        new Notification(`🚨 ${alarm.time} - Reminder`, {
+        new Notification(🚨$ {
+            alarm.time
+        }-Reminder, {
             body: alarm.desc || 'Your scheduled alarm is ringing.',
-            icon: "https://cdn-icons-png.flaticon.com/512/1827/1827392.png",
             requireInteraction: true
         });
     }
-
     if (!titleFlashInterval) {
         let toggle = false;
         titleFlashInterval = setInterval(() => {
@@ -354,6 +402,16 @@ function triggerAlarm(alarm) {
         }, 500);
     }
 }
+
+function dismissAlarm() {
+    document.getElementById('alarmOverlay').classList.remove('active');
+    clearInterval(alarmInterval);
+    clearInterval(titleFlashInterval);
+    titleFlashInterval = null;
+    document.title = originalTitle;
+    const activeTime = document.getElementById('triggeredTime').textContent;
+    deleteAlarm(activeTime);
+} 
 </script>
 
 </body>
