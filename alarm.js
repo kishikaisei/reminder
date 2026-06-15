@@ -4,29 +4,42 @@ let alarmInterval = null;
 let originalTitle = document.title;
 let titleFlashInterval = null;
 let lastCheckedMinute = "";
+let worker = null;
 
-function clockLoop() {
-    const now = new Date();
-    const timeString = now.toTimeString().split(' ');
-    document.getElementById('liveClock').textContent = timeString[0];
-
-    const currentHHMM = timeString[0].substring(0, 5);
-    
-    if (currentHHMM !== lastCheckedMinute) {
-        lastCheckedMinute = currentHHMM;
-        const activeAlarm = alarms.find(a => a.time === currentHHMM);
-        if (activeAlarm) {
-            triggerAlarm(activeAlarm);
-        }
-    }
-    requestAnimationFrame(clockLoop);
-}
-
-// Initialization hooks
-requestAnimationFrame(clockLoop);
+// Initialize state engines
+initBackgroundWorker();
 renderAlarms();
 checkNotificationPermission();
 setupEnterKeyDetection();
+
+function initBackgroundWorker() {
+    // This creates a dedicated background thread without requiring a separate physical file
+    const workerCode = `
+        setInterval(() => {
+            const now = new Date();
+            const timeString = now.toTimeString().split(' ')[0];
+            const currentHHMM = timeString.substring(0, 5);
+            self.postMessage({ timeString, currentHHMM });
+        }, 1000);
+    `;
+    
+    const blob = new Blob([workerCode], { type: "application/javascript" });
+    worker = new Worker(URL.createObjectURL(blob));
+    
+    // The background thread constantly updates our clock and checks alarms instantly
+    worker.onmessage = function(e) {
+        const { timeString, currentHHMM } = e.data;
+        document.getElementById('liveClock').textContent = timeString;
+
+        if (currentHHMM !== lastCheckedMinute) {
+            lastCheckedMinute = currentHHMM;
+            const activeAlarm = alarms.find(a => a.time === currentHHMM);
+            if (activeAlarm) {
+                triggerAlarm(activeAlarm);
+            }
+        }
+    };
+}
 
 function checkNotificationPermission() {
     if (!("Notification" in window)) return;
@@ -47,7 +60,6 @@ function setupEnterKeyDetection() {
     });
 }
 
-// Subtracts 5 minutes from HH:MM string structure safely
 function subtractFiveMinutes(timeStr) {
     let [hours, minutes] = timeStr.split(':').map(Number);
     minutes -= 5;
@@ -68,7 +80,6 @@ function importExcelData() {
     lines.forEach((line, index) => {
         if (!line.trim()) return;
         
-        // Split by tabs or multiple spaces matching standard Excel clipboard copies
         const columns = line.split(/\t| {2,}/).map(c => c.trim()).filter(Boolean);
         if (columns.length < 3) return;
 
@@ -76,28 +87,20 @@ function importExcelData() {
         const endTime = columns[1];
         const taskName = columns[2];
 
-        // Ensure the columns actually contain valid time formats (HH:MM)
         const timeRegex = /^([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/;
         if (!timeRegex.test(startTime) || !timeRegex.test(endTime)) return;
 
-        // CRITICAL FILTER: Only process the line if it specifically mentions "Chat"
-        // This ignores "SoMe + Chatter + Inbox" but catches "Chat", "chat", or "Chat "
         if (!taskName.toLowerCase().includes('chat') || taskName.toLowerCase().includes('chatter')) {
-            return; // Skip this entire row completely
+            return; 
         }
 
-        // Compute 5-minute offset rules
         const triggerStart = subtractFiveMinutes(startTime);
         const triggerEnd = subtractFiveMinutes(endTime);
 
-        // Standardize labels depending on context rules
         const startLabel = `Upcoming: Start of ${taskName}`;
-        
-        // Check if this is the final row in the entire pasted document to label it as End of Shift
         const isLastShiftLine = (index === lines.length - 1 || index === lines.filter(Boolean).length - 1);
         const endLabel = isLastShiftLine ? "Upcoming: End of Shift" : `Upcoming: End of ${taskName}`;
 
-        // Inject into alarm state arrays safely without duplicates
         if (!alarms.some(a => a.time === triggerStart)) alarms.push({ time: triggerStart, desc: startLabel });
         if (!alarms.some(a => a.time === triggerEnd)) alarms.push({ time: triggerEnd, desc: endLabel });
     });
@@ -182,12 +185,14 @@ function triggerAlarm(alarm) {
     document.getElementById('triggeredDesc').textContent = alarm.desc;
     overlay.classList.add('active');
     
+    // Web Audio APIs can still be slightly delayed until you visually refocus the window,
+    // but the system notification below will fire EXACTLY on the dot.
     startBeeping();
 
     if ("Notification" in window && Notification.permission === "granted") {
         new Notification(`🚨 ${alarm.time} - Shift Reminder`, {
             body: alarm.desc,
-            requireInteraction: true
+            requireInteraction: true // Keeps notification sticky on Windows until clicked
         });
     }
 
