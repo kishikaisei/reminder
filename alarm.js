@@ -65,10 +65,10 @@ function importExcelData() {
 
     const lines = rawText.split('\n');
     
-    lines.forEach(line => {
+    lines.forEach((line, index) => {
         if (!line.trim()) return;
         
-        // Split by tabs or multiple spacing columns matching standard clipboard actions
+        // Split by tabs or multiple spaces matching standard Excel clipboard copies
         const columns = line.split(/\t| {2,}/).map(c => c.trim()).filter(Boolean);
         if (columns.length < 3) return;
 
@@ -76,20 +76,28 @@ function importExcelData() {
         const endTime = columns[1];
         const taskName = columns[2];
 
-        // Ensure variables contain standard time mapping profiles
+        // Ensure the columns actually contain valid time formats (HH:MM)
         const timeRegex = /^([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/;
         if (!timeRegex.test(startTime) || !timeRegex.test(endTime)) return;
+
+        // CRITICAL FILTER: Only process the line if it specifically mentions "Chat"
+        // This ignores "SoMe + Chatter + Inbox" but catches "Chat", "chat", or "Chat "
+        if (!taskName.toLowerCase().includes('chat') || taskName.toLowerCase().includes('chatter')) {
+            return; // Skip this entire row completely
+        }
 
         // Compute 5-minute offset rules
         const triggerStart = subtractFiveMinutes(startTime);
         const triggerEnd = subtractFiveMinutes(endTime);
 
         // Standardize labels depending on context rules
-        const startLabel = `Upcoming Task: ${taskName}`;
-        const isLastShiftLine = (line === lines[lines.length - 1] || line === lines[lines.filter(Boolean).length - 1]);
-        const endLabel = isLastShiftLine ? "Upcoming: End of Shift" : `Ending Task: ${taskName}`;
+        const startLabel = `Upcoming: Start of ${taskName}`;
+        
+        // Check if this is the final row in the entire pasted document to label it as End of Shift
+        const isLastShiftLine = (index === lines.length - 1 || index === lines.filter(Boolean).length - 1);
+        const endLabel = isLastShiftLine ? "Upcoming: End of Shift" : `Upcoming: End of ${taskName}`;
 
-        // Inject into alarm state arrays safely
+        // Inject into alarm state arrays safely without duplicates
         if (!alarms.some(a => a.time === triggerStart)) alarms.push({ time: triggerStart, desc: startLabel });
         if (!alarms.some(a => a.time === triggerEnd)) alarms.push({ time: triggerEnd, desc: endLabel });
     });
