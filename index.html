@@ -9,26 +9,39 @@
 <body>
 
     <div class="container">
-        <h1>Multi-Alarm Assistant</h1>
+        <h1>⏰ Shift-Alarm Automation</h1>
         <div class="clock-display" id="liveClock">00:00:00</div>
         
-        <div class="form-group">
-            <input type="time" id="alarmTime" required>
-            <button onclick="addAlarm()">Add Alarm</button>
+        <!-- Excel Paste Importer Box -->
+        <div class="import-section">
+            <h3>📋 Paste Excel Shift Schedule</h3>
+            <textarea id="excelInput" rows="5" placeholder="Paste rows directly from Excel here...&#10;Example:&#10;12:30   14:00   Chat"></textarea>
+            <button onclick="importExcelData()">Import & Auto-Set 5-Min Reminders</button>
         </div>
 
+        <div class="manual-section">
+            <h3>➕ Add Manual Alarm</h3>
+            <div class="form-group">
+                <input type="time" id="alarmTime" required>
+                <input type="text" id="alarmDesc" placeholder="Label (Optional)">
+                <button onclick="addManualAlarm()">Add</button>
+            </div>
+        </div>
+
+        <h3>📅 Active Alarms</h3>
         <ul class="alarm-list" id="alarmList"></ul>
     </div>
 
     <!-- Alarm Trigger Alert Interface -->
     <div class="overlay" id="alarmOverlay">
         <div class="modal">
-            <h2>🚨 REMINDER 🚨</h2>
-            <p>Your scheduled alarm at <span id="triggeredTime" style="font-weight:bold;">00:00</span> is triggering right now!</p>
-            <button class="btn-dismiss" onclick="dismissAlarm()">Dismiss Alert</button>
+            <h2>🚨 SHIFT REMINDER 🚨</h2>
+            <p>Time Milestone Reached at <span id="triggeredTime" style="font-weight:bold;">00:00</span></p>
+            <div id="triggeredDesc" class="alarm-banner" style="font-weight:bold; margin-top:15px; font-size:1.3rem;">No Details</div>
+            <button class="btn-dismiss" style="margin-top: 20px;" onclick="dismissAlarm()">Dismiss Alert</button>
         </div>
     </div>
 
-    <script src="alarm.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
