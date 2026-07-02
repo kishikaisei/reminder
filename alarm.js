@@ -99,29 +99,39 @@ function startBeeping() {
     }, 500);
 }
 
-function triggerAlarm(time) {
-    // Prevent duplicate alert stacks if it's already open
+function triggerAlarm(alarm) {
     const overlay = document.getElementById('alarmOverlay');
-    if (overlay.classList.contains('active') && document.getElementById('triggeredTime').textContent === time) return;
+    if (overlay.classList.contains('active') && document.getElementById('triggeredTime').textContent === alarm.time) return;
 
-    document.getElementById('triggeredTime').textContent = time;
+    document.getElementById('triggeredTime').textContent = alarm.time;
+    document.getElementById('triggeredDesc').textContent = alarm.desc;
     overlay.classList.add('active');
     
     startBeeping();
 
-    // Native Desktop Notification Integration
     if ("Notification" in window && Notification.permission === "granted") {
-        new Notification(`🚨 Alarm Reminder`, {
-            body: `Your scheduled alarm for ${time} is ringing right now!`,
-            requireInteraction: true // Keeps notification on screen until dismissed
+        const notification = new Notification(`🚨 ${alarm.time} - Shift Reminder`, {
+            body: alarm.desc,
+            requireInteraction: true // Keeps notification sticky on Windows until clicked or closed
         });
+
+        // Stops beeping and dismisses the webpage modal if you click the notification banner
+        notification.onclick = function() {
+            window.focus(); // Brings your browser window back to the front
+            dismissAlarm();
+            notification.close();
+        };
+
+        // Stops beeping and dismisses the webpage modal if you click the 'X' or 'Close' button on the notification
+        notification.onclose = function() {
+            dismissAlarm();
+        };
     }
 
-    // Flash tab header text 
-    if(!titleFlashInterval) {
+    if (!titleFlashInterval) {
         let toggle = false;
         titleFlashInterval = setInterval(() => {
-            document.title = toggle ? "⚠️ ALARM ACTIVE! ⚠️" : "⏰ " + time;
+            document.title = toggle ? "⚠️ SHIFT ALERT! ⚠️" : "⏰ " + alarm.time;
             toggle = !toggle;
         }, 500);
     }
