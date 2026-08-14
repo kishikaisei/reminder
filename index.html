@@ -21,8 +21,11 @@
 
         <select id="soundSelection">
             <option value="beeper">Default Synthetic Beep</option>
-            <option value="sounds/airport.mp3">Airport announcement</option>
+            <option value="audio/airport.mp3">Airport announcement</option>
+            <option value="local">📂 Use a local MP3 file...</option>
         </select>
+        <!-- Hidden file loader for secure custom browser access -->
+        <input type="file" id="localAudioFile" accept="audio/mp3, audio/*" style="display: none;">
 
         <div class="manual-section">
             <h3>➕ Add Manual Alarm</h3>

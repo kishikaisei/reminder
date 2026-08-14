@@ -179,3 +179,9 @@ button:hover { opacity: 0.9; }
     color: white;
     padding: 10px;
 }
+
+#soundSelection option[value="local"] {
+    color: var(--accent-color);
+    font-weight: bold;
+    border-top: 1px solid #3f3f46;
+}

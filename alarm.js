@@ -1,20 +1,23 @@
 let alarms = JSON.parse(localStorage.getItem('savedShiftAlarms')) || [];
 let audioCtx = null;
 let alarmInterval = null;
-let currentAudio = null; // Tracks the playing MP3 object
+let currentAudio = null; // Tracks playing audio instance
 let originalTitle = document.title;
 let titleFlashInterval = null;
 let lastCheckedMinute = "";
 let worker = null;
+
+// Track custom file objects in memory
+let cachedLocalFileUrl = null;
 
 // Initialize state engines
 initBackgroundWorker();
 renderAlarms();
 checkNotificationPermission();
 setupEnterKeyDetection();
+initSoundPreferences();
 
 function initBackgroundWorker() {
-    // This creates a dedicated background thread without requiring a separate physical file
     const workerCode = `
         setInterval(() => {
             const now = new Date();
@@ -27,7 +30,6 @@ function initBackgroundWorker() {
     const blob = new Blob([workerCode], { type: "application/javascript" });
     worker = new Worker(URL.createObjectURL(blob));
     
-    // The background thread constantly updates our clock and checks alarms instantly
     worker.onmessage = function(e) {
         const { timeString, currentHHMM } = e.data;
         document.getElementById('liveClock').textContent = timeString;
@@ -40,6 +42,60 @@ function initBackgroundWorker() {
             }
         }
     };
+}
+
+// Restores choice from localStorage and configures file selectors
+function initSoundPreferences() {
+    const soundSelect = document.getElementById('soundSelection');
+    const localFileInput = document.getElementById('localAudioFile');
+    const savedSound = localStorage.getItem('defaultAlarmSound') || 'beeper';
+
+    if (soundSelect) {
+        soundSelect.value = savedSound === 'local' ? 'beeper' : savedSound; 
+        
+        soundSelect.addEventListener('change', (e) => {
+            if (e.target.value === 'local') {
+                if (localFileInput) localFileInput.click();
+            } else {
+                localStorage.setItem('defaultAlarmSound', e.target.value);
+            }
+        });
+    }
+
+    if (localFileInput) {
+        localFileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                if (cachedLocalFileUrl) URL.revokeObjectURL(cachedLocalFileUrl);
+                cachedLocalFileUrl = URL.createObjectURL(file);
+                
+                localStorage.setItem('defaultAlarmSound', 'local_active');
+                
+                let localOption = soundSelect.querySelector('option[value="local_active"]');
+                if (!localOption) {
+                    localOption = document.createElement('option');
+                    localOption.value = 'local_active';
+                    soundSelect.appendChild(localOption);
+                }
+                localOption.textContent = `💻 Local File: ${file.name}`;
+                soundSelect.value = 'local_active';
+            } else {
+                soundSelect.value = 'beeper';
+                localStorage.setItem('defaultAlarmSound', 'beeper');
+            }
+        });
+    }
+
+    const lastSoundConfig = localStorage.getItem('defaultAlarmSound');
+    if (lastSoundConfig && lastSoundConfig !== 'local_active') {
+        soundSelect.value = lastSoundConfig;
+    } else if (lastSoundConfig === 'local_active') {
+        const localOption = document.createElement('option');
+        localOption.value = 'local_active';
+        localOption.textContent = '💻 Custom Local File (Click choice to load file)';
+        soundSelect.appendChild(localOption);
+        soundSelect.value = 'local_active';
+    }
 }
 
 function checkNotificationPermission() {
@@ -178,14 +234,11 @@ function playSingleBeep() {
     } catch(e) {}
 }
 
-// Handles loading and looping for hardcoded local audio tracks
 function playAudioFile(filePath) {
-    if (currentAudio) {
-        currentAudio.pause();
-    }
+    if (currentAudio) currentAudio.pause();
     currentAudio = new Audio(filePath);
     currentAudio.loop = true;
-    currentAudio.play().catch(err => console.log("Audio play blocked until window click:", err));
+    currentAudio.play().catch(err => console.log("Audio play blocked:", err));
 }
 
 function triggerAlarm(alarm) {
@@ -196,20 +249,23 @@ function triggerAlarm(alarm) {
     document.getElementById('triggeredDesc').textContent = alarm.desc;
     overlay.classList.add('active');
     
-    // Check your HTML drop-down element value
     const soundSelect = document.getElementById('soundSelection');
     const chosenSound = soundSelect ? soundSelect.value : 'beeper';
 
     if (chosenSound === 'beeper') {
         startBeeping();
+    } else if (chosenSound === 'local_active' && cachedLocalFileUrl) {
+        playAudioFile(cachedLocalFileUrl);
+    } else if (chosenSound !== 'local' && chosenSound !== 'local_active') {
+        playAudioFile(chosenSound); 
     } else {
-        playAudioFile(chosenSound); // Executes audio file initialization directly
+        startBeeping(); // Fallback if a local file profile was saved but not re-linked
     }
 
     if ("Notification" in window && Notification.permission === "granted") {
         new Notification(`🚨 ${alarm.time} - Shift Reminder`, {
             body: alarm.desc,
-            requireInteraction: true // Keeps notification sticky on Windows until clicked
+            requireInteraction: true
         });
     }
 
@@ -228,14 +284,10 @@ function dismissAlarm() {
     clearInterval(titleFlashInterval);
     titleFlashInterval = null;
     document.title = originalTitle;
-    
-    // Stop MP3 playback immediately if active
     if (currentAudio) {
         currentAudio.pause();
         currentAudio.currentTime = 0;
         currentAudio = null;
     }
-
-    const activeTime = document.getElementById('triggeredTime').textContent;
-    deleteAlarm(activeTime);
+    const activeTime = document.getElementById('triggeredTime').textContent;deleteAlarm(activeTime);
 }
