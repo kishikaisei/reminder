@@ -1,6 +1,7 @@
 let alarms = JSON.parse(localStorage.getItem('savedShiftAlarms')) || [];
 let audioCtx = null;
 let alarmInterval = null;
+let currentAudio = null; // Tracks the playing MP3 object
 let originalTitle = document.title;
 let titleFlashInterval = null;
 let lastCheckedMinute = "";
@@ -177,6 +178,16 @@ function playSingleBeep() {
     } catch(e) {}
 }
 
+// Handles loading and looping for hardcoded local audio tracks
+function playAudioFile(filePath) {
+    if (currentAudio) {
+        currentAudio.pause();
+    }
+    currentAudio = new Audio(filePath);
+    currentAudio.loop = true;
+    currentAudio.play().catch(err => console.log("Audio play blocked until window click:", err));
+}
+
 function triggerAlarm(alarm) {
     const overlay = document.getElementById('alarmOverlay');
     if (overlay.classList.contains('active') && document.getElementById('triggeredTime').textContent === alarm.time) return;
@@ -185,9 +196,15 @@ function triggerAlarm(alarm) {
     document.getElementById('triggeredDesc').textContent = alarm.desc;
     overlay.classList.add('active');
     
-    // Web Audio APIs can still be slightly delayed until you visually refocus the window,
-    // but the system notification below will fire EXACTLY on the dot.
-    startBeeping();
+    // Check your HTML drop-down element value
+    const soundSelect = document.getElementById('soundSelection');
+    const chosenSound = soundSelect ? soundSelect.value : 'beeper';
+
+    if (chosenSound === 'beeper') {
+        startBeeping();
+    } else {
+        playAudioFile(chosenSound); // Executes audio file initialization directly
+    }
 
     if ("Notification" in window && Notification.permission === "granted") {
         new Notification(`🚨 ${alarm.time} - Shift Reminder`, {
@@ -212,6 +229,13 @@ function dismissAlarm() {
     titleFlashInterval = null;
     document.title = originalTitle;
     
+    // Stop MP3 playback immediately if active
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+        currentAudio = null;
+    }
+
     const activeTime = document.getElementById('triggeredTime').textContent;
     deleteAlarm(activeTime);
 }
